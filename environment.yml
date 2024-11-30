@@ -1,0 +1,10 @@
+name: time-switch
+channels:
+  - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+dependencies:
+  - pip=24.2
+  - python=3.12.7
+  - pip:
+      - pygame==2.6.1
