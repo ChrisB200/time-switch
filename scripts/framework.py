@@ -1,5 +1,6 @@
 # Modules
 import pygame
+import random
 from pygame.constants import *
 
 import logging
@@ -9,6 +10,32 @@ logger = logging.getLogger(__name__)
 MENU = 0
 PLAYING = 1
 PAUSED = 2
+
+class Timer:
+    def __init__(self, duration):
+        self.duration = duration
+        self.elapsed = 0
+
+    @property
+    def remaining(self):
+        return self.duration - self.elapsed
+
+    @property
+    def completed(self):
+        return True if self.remaining <= 0 else False
+
+    def restart(self):
+        self.elapsed = 0
+
+    def update(self, dt):
+        self.elapsed += dt
+
+def random_color():
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    return (r, g, b)
+
 
 # Returns a crop of a selected surface
 def clip(surf, x1, y1, x2, y2):
