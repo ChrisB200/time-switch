@@ -12,6 +12,7 @@ class Window:
         self.resolution = Vector2(resolution)
         self.scale = scale
         self.display = pygame.display.set_mode(self.resolution / self.scale, flags=pygame.FULLSCREEN | pygame.HWSURFACE | pygame.SCALED)
+        self.screen = pygame.Surface(self.resolution / self.scale)
 
         self.old_scroll = Vector2()
         self.true_scroll = Vector2()
@@ -25,18 +26,14 @@ class Window:
         self.target = entity
 
     @property
-    def screen(self):
-        return self.display
-
-    @property
     def size(self):
         return Vector2(self.resolution / self.scale)
 
     @property
     def scroll(self):
         scroll = Vector2(int(self.true_scroll.x), int(self.true_scroll.y))
-        scroll = self.true_scroll
         self.scroll_diff = scroll - self.true_scroll
+        print(self.true_scroll)
         return scroll
 
     def calculate_scroll(self, transform: Vector2):
@@ -56,3 +53,6 @@ class Window:
     def update(self):
         if self.target:
             self.follow_target()
+
+    def draw(self):
+        self.display.blit(self.screen, Vector2())

@@ -6,11 +6,13 @@ from scripts.framework import Timer, random_color
 from scripts.input import Controller
 from scripts.map import Tile, TileMap
 
+
 @dataclass
 class Controls:
     move_left: int
     move_right: int
     jump: int
+
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, assets, tag, transform, size):
@@ -21,7 +23,9 @@ class Entity(pygame.sprite.Sprite):
         self.size = Vector2(size)
         self.movement = Vector2()
         self.tag = tag
-        self.rect = pygame.Rect(self.transform.x, self.transform.y, self.size.x, self.size.y)
+        self.rect = pygame.Rect(
+            self.transform.x, self.transform.y, self.size.x, self.size.y
+        )
 
         self.rotation = 0
         self.flip = False
@@ -85,23 +89,31 @@ class Entity(pygame.sprite.Sprite):
     def draw(self, window):
         offset = self.a_offset if not self.flip else self.flipped_a_offset
         if self.debug:
-            pygame.draw.rect(window.screen, self.debug_color, window.calculate_scroll_rect(self.rect))
+            pygame.draw.rect(
+                window.screen, self.debug_color, window.calculate_scroll_rect(self.rect)
+            )
         window.screen.blit(self.image, window.calculate_scroll(self.transform + offset))
+
 
 class Player(Entity):
     def __init__(self, assets, tag, transform, size, input):
         super().__init__(assets, tag, transform, size)
         self.input = input
-        self.collision_dirs = {"bottom": False, "top": False, "left": False, "right": False}
+        self.collision_dirs = {
+            "bottom": False,
+            "top": False,
+            "left": False,
+            "right": False,
+        }
         # x-axis
         self.direction = Vector2()
         self.speed = 40
-        self.max_speed = 100
+        self.max_speed = 120
         self.friction = 2.2
         # y-axis
         self.air_timer = Timer(0.2)
         self.gravity = 600
-        self.jump_speed = -250
+        self.jump_speed = -280
         self.max_fall_speed = 500
         self.is_grounded = False
 
@@ -128,7 +140,9 @@ class Player(Entity):
                 self.directions["right"] = False
 
         # Horizontal movement
-        self.direction.x = (-1 if self.directions["left"] else 1 if self.directions["right"] else 0) * self.speed
+        self.direction.x = (
+            -1 if self.directions["left"] else 1 if self.directions["right"] else 0
+        ) * self.speed
 
     def move(self, dt, tile_map: TileMap):
         collision_dirs = {"bottom": False, "top": False, "left": False, "right": False}
@@ -167,6 +181,14 @@ class Player(Entity):
     def handle_collision(self, sprite):
         pass
 
+    def animation_states(self):
+        if not self.is_grounded:
+            self.set_action("jump")
+        elif self.direction.x > 0 or self.direction.x < 0:
+            self.set_action("run")
+        else:
+            self.set_action("idle")
+
     def get_center(self):
         transform = self.transform.copy()
         transform.x = transform.x + (self.size.x // 2)
@@ -176,6 +198,7 @@ class Player(Entity):
     def update(self, dt, tile_map, *groups):
         super().update(dt, *groups)
         self.update_animation(dt)
+        self.animation_states()
 
         # apply acceleration
         acceleration = self.direction.x * self.speed * dt
@@ -184,17 +207,18 @@ class Player(Entity):
 
         # apply friction
         if self.direction.x > 0:
-            self.set_action("run")
             self.flip = False
         elif self.direction.x < 0:
-            self.set_action("run")
             self.flip = True
         else:
-            self.set_action("idle")
             if self.movement.x > 0:
-                self.movement.x = max(0, self.movement.x - self.friction * dt * self.max_speed)
+                self.movement.x = max(
+                    0, self.movement.x - self.friction * dt * self.max_speed
+                )
             elif self.movement.x < 0:
-                self.movement.x = min(0, self.movement.x + self.friction * dt * self.max_speed)
+                self.movement.x = min(
+                    0, self.movement.x + self.friction * dt * self.max_speed
+                )
 
         # handle jumping and falling
         if self.collision_dirs["bottom"]:
@@ -202,10 +226,11 @@ class Player(Entity):
             self.is_grounded = True
             self.air_timer.restart()
         self.movement.y += self.gravity * dt
-        self.movement.y = clamp(self.movement.y, -self.max_fall_speed, self.max_fall_speed)
+        self.movement.y = clamp(
+            self.movement.y, -self.max_fall_speed, self.max_fall_speed
+        )
         self.air_timer.update(dt)
         if self.air_timer.completed:
             self.is_grounded = False
 
         self.move(dt, tile_map)
-

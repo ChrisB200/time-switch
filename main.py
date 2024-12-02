@@ -53,6 +53,7 @@ class Game:
             e.draw(self.window)
         self.player.draw(self.window)
         self.tile_map.draw(self.window)
+        self.window.draw()
         pygame.display.flip()
 
     def event_handler(self):
