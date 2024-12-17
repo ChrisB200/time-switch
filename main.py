@@ -45,6 +45,7 @@ class Game:
 
         tile = Tile((100, 0, 0), (0, 200), (600, 20))
         self.tile_map.add(tile)
+        self.window.set_target(self.player)
 
     def draw(self):
         self.window.screen.fill((200, 200, 200))
@@ -70,7 +71,6 @@ class Game:
         for e in self.entities:
             e.update(self.dt)
         self.player.update(self.dt, self.tile_map)
-        self.window.set_target(self.player)
         self.window.update()
 
     def run(self):

@@ -111,6 +111,8 @@ class Player(Entity):
         self.max_speed = 120
         self.friction = 2.2
         # y-axis
+        self.jump_buffer = True
+        self.buffer_timer = Timer(0.2)
         self.air_timer = Timer(0.2)
         self.gravity = 600
         self.jump_speed = -280
@@ -129,9 +131,9 @@ class Player(Entity):
                 self.directions["left"] = True
             elif event.key == self.input.controls.move_right:
                 self.directions["right"] = True
-            if event.key == self.input.controls.jump and self.is_grounded:
-                self.movement.y = self.jump_speed
-                self.is_grounded = False
+            if event.key == self.input.controls.jump:
+                self.jump_buffer = True
+                self.buffer_timer.restart()
 
         if event.type == pygame.KEYUP:
             if event.key == self.input.controls.move_left:
@@ -221,6 +223,10 @@ class Player(Entity):
                 )
 
         # handle jumping and falling
+        if self.jump_buffer and self.is_grounded and not self.buffer_timer.completed:
+            self.movement.y = self.jump_speed
+            self.is_grounded = False
+
         if self.collision_dirs["bottom"]:
             self.movement.y = 0
             self.is_grounded = True
@@ -230,6 +236,7 @@ class Player(Entity):
             self.movement.y, -self.max_fall_speed, self.max_fall_speed
         )
         self.air_timer.update(dt)
+        self.buffer_timer.update(dt)
         if self.air_timer.completed:
             self.is_grounded = False
 
