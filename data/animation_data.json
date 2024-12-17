@@ -4,7 +4,7 @@
     "loop": true
   },
   "player/run": {
-    "img_dur": 0.1,
+    "img_dur": 0.05,
     "loop": true
   },
   "player2/run/down": {

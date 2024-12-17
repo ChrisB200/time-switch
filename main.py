@@ -48,9 +48,9 @@ class Game:
         self.player.set_offset((-2, 0), True)
 
         tile = Tile((100, 0, 0), (0, 200), (5000, 20))
-        tile1 = Tile((100, 0, 0), (1000, 100), (700, 20))
-        tile2 = Tile((255, 255, 0), (2000, 100), (700, 20))
-        tile3 = Tile((0, 0, 255), (3000, 100), (700, 20))
+        tile1 = Tile((100, 0, 0), (1000, 150), (700, 20))
+        tile2 = Tile((255, 255, 0), (2000, 150), (700, 20))
+        tile3 = Tile((0, 0, 255), (3000, 150), (700, 20))
         self.tile_map.add(tile, tile1, tile2, tile3)
 
     def draw(self):

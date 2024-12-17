@@ -14,6 +14,7 @@ class Animation:
         self.images = images
         self.loop = loop
         self.img_duration = img_dur
+        self.duration = self.img_duration
         self.done = False
         self.frame = 0
         self.time_elapsed = 0
@@ -25,8 +26,11 @@ class Animation:
     # Updates the current frame (uses deltatime)
     def update(self, dt):
         self.time_elapsed += dt
-        while self.time_elapsed >= self.img_duration:
-            self.time_elapsed -= self.img_duration
+        while self.time_elapsed >= self.duration:
+            if self.duration == 0:
+                break
+
+            self.time_elapsed -= self.duration
             if self.loop:
                 self.frame = (self.frame + 1) % len(self.images)
             else:

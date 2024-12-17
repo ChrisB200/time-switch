@@ -115,7 +115,7 @@ class Player(Entity):
         # y-axis
         self.air_timer = Timer(0.2)
         self.gravity = 600
-        self.jump_speed = -280
+        self.jump_speed = -320
         self.max_fall_speed = 500
         self.is_grounded = False
 
@@ -188,6 +188,11 @@ class Player(Entity):
             self.set_action("jump")
         elif self.direction.x > 0 or self.direction.x < 0:
             self.set_action("run")
+            percent = abs(self.movement.x / self.max_speed)
+            if percent == 0:
+                self.animation.duration = 0
+            else:
+                self.animation.duration = self.animation.img_duration / (percent + 0.3)
         else:
             self.set_action("idle")
 
@@ -230,10 +235,14 @@ class Player(Entity):
             self.movement.y = 0
             self.is_grounded = True
             self.air_timer.restart()
+        if self.collision_dirs["top"]:
+            self.movement.y = 0
+
         self.movement.y += self.gravity * dt
         self.movement.y = clamp(
             self.movement.y, -self.max_fall_speed, self.max_fall_speed
         )
+
         self.air_timer.update(dt)
         if self.air_timer.completed:
             self.is_grounded = False
