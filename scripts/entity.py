@@ -107,15 +107,17 @@ class Player(Entity):
         }
         # x-axis
         self.direction = Vector2()
-        self.speed = 40
-        self.max_speed = 120
-        self.friction = 2.2
+        self.acceleration = 5
+        self.deceleration = 20
+        self.max_speed = 300
+        self.friction = 300
+        self.air_acceleration = 4.5
         # y-axis
         self.jump_buffer = True
         self.buffer_timer = Timer(0.2)
         self.air_timer = Timer(0.2)
         self.gravity = 600
-        self.jump_speed = -280
+        self.jump_speed = -320
         self.max_fall_speed = 500
         self.is_grounded = False
 
@@ -188,6 +190,11 @@ class Player(Entity):
             self.set_action("jump")
         elif self.direction.x > 0 or self.direction.x < 0:
             self.set_action("run")
+            percent = abs(self.movement.x / self.max_speed)
+            if percent == 0:
+                self.animation.duration = 0
+            else:
+                self.animation.duration = self.animation.img_duration / (percent + 0.3)
         else:
             self.set_action("idle")
 
@@ -202,25 +209,28 @@ class Player(Entity):
         self.update_animation(dt)
         self.animation_states()
 
-        # apply acceleration
-        acceleration = self.direction.x * self.speed * dt
-        self.movement.x += acceleration
-        self.movement.x = clamp(self.movement.x, -self.max_speed, self.max_speed)
+        if not self.is_grounded:
+            self.movement.x += self.direction.x * self.air_acceleration * dt
+            self.movement.x = clamp(self.movement.x, -self.max_speed, self.max_speed)
+        elif (self.directions["left"] and self.movement.x > 0) or (self.directions["right"] and self.movement.x < 0):
+            self.movement.x += self.direction.x * self.deceleration * dt
+            self.movement.x = clamp(self.movement.x, -self.max_speed, self.max_speed)
+        elif (self.direction.x != 0):
+            self.movement.x += self.direction.x * self.acceleration * dt
+            self.movement.x = clamp(self.movement.x, -self.max_speed, self.max_speed)
+        elif self.direction.x == 0:
+            if self.movement.x != 0:
+                friction_force = self.friction * dt
+                if abs(self.movement.x) <= friction_force:
+                    self.movement.x = 0
+                else:
+                    self.movement.x -= friction_force * (1 if self.movement.x > 0 else -1)
 
-        # apply friction
-        if self.direction.x > 0:
+        # flip the sprite
+        if self.movement.x > 0:
             self.flip = False
-        elif self.direction.x < 0:
+        if self.movement.x < 0:
             self.flip = True
-        else:
-            if self.movement.x > 0:
-                self.movement.x = max(
-                    0, self.movement.x - self.friction * dt * self.max_speed
-                )
-            elif self.movement.x < 0:
-                self.movement.x = min(
-                    0, self.movement.x + self.friction * dt * self.max_speed
-                )
 
         # handle jumping and falling
         if self.jump_buffer and self.is_grounded and not self.buffer_timer.completed:
@@ -231,10 +241,14 @@ class Player(Entity):
             self.movement.y = 0
             self.is_grounded = True
             self.air_timer.restart()
+        if self.collision_dirs["top"]:
+            self.movement.y = 0
+
         self.movement.y += self.gravity * dt
         self.movement.y = clamp(
             self.movement.y, -self.max_fall_speed, self.max_fall_speed
         )
+
         self.air_timer.update(dt)
         self.buffer_timer.update(dt)
         if self.air_timer.completed:
